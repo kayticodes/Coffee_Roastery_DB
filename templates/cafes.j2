@@ -1,0 +1,153 @@
+<!-- Citation for app structure -->
+<!-- Date 11/9/22 -->
+<!-- Adapted Sample Flask application for a BSG database, -->
+<!-- Source URL https://github.com/osu-cs340-ecampus/flask-starter-app -->
+
+
+<html>
+
+<head>
+	<title>Cafes</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+	<script language="JavaScript">
+	function showform(dowhat) {
+		/*
+		 * four DIVS: browse, insert, update, delete
+		 * this function sets one visible the others not
+		 */
+		if(dowhat == 'insert') {
+			document.getElementById('browse').style.display = 'none';
+			document.getElementById('insert').style.display = 'block';
+			document.getElementById('edit').style.display = 'none';
+			document.getElementById('delete').style.display = 'none';
+		} else if(dowhat == 'update') {
+			document.getElementById('browse').style.display = 'none';
+			document.getElementById('insert').style.display = 'none';
+			document.getElementById('edit').style.display = 'block';
+			document.getElementById('delete').style.display = 'none';
+		} else if(dowhat == 'delete') {
+			document.getElementById('browse').style.display = 'none';
+			document.getElementById('insert').style.display = 'none';
+			document.getElementById('edit').style.display = 'none';
+			document.getElementById('delete').style.display = 'block';
+		} else if(dowhat == 'all') {
+			document.getElementById('browse').style.display = 'block';
+			document.getElementById('insert').style.display = 'block';
+			document.getElementById('edit').style.display = 'block';
+			document.getElementById('delete').style.display = 'block';
+		} else { //by default display browse
+			document.getElementById('browse').style.display = 'block';
+			document.getElementById('insert').style.display = 'none';
+			document.getElementById('edit').style.display = 'none';
+			document.getElementById('delete').style.display = 'none';
+		}
+	}
+
+	function newCafe() {
+		showform('insert');
+	}
+
+	function updateCafe(cafe_id) {
+		showform('update');
+	}
+
+	function deleteCafe(cafe_id) {
+		showform('delete');
+	}
+
+	function browseCafe() {
+		showform('browse');
+	}
+
+	function showAll() {
+		showform('all');
+	}
+	</script>
+</head>
+
+<body onload="browseCafe()">
+	<h1>Cafe</h1> [ <a href="/">Home</a> | <a href="cafes">Cafes</a> | <a href="coffees">Coffees</a>  | <a href="roasteries">Roasteries</a>  | <a href="invoices">Invoices</a> | <a href ="CoffeesHasInvoices">Coffees/Invoices</a> ]
+	<div id="browse">
+		<p><a href="#" onClick="newCafe()">Add New</a> </p>
+		<table border="1" cellpadding="5">
+            <!-- Access data tuple passed from app.py -->
+            {% if data %}
+			    <thead>
+				    <tr>
+					    <!-- Iterate through each key in the first entry to get the column name -->
+                        {% for key in data[0].keys() %}
+
+                        <!-- Create a <th> tag with the key inside of it, this will be our header row -->
+					    <th scope="col" data-field="{{ key }}" data-filter-control="input">{{ key }}</th>
+
+                        <!-- End of this for loop -->
+                        {% endfor %}
+                    </tr>
+
+				<tbody>
+					<!-- Now, iterate through every item in data -->{% for item in data %}
+					    <tr>
+						    <!-- Then iterate through every key in the current item dictionary -->
+                            {% for key in item.keys() %}
+
+						    <!-- Create a <td> element with the value of that key in it -->
+						    <td> {{item[key]}} </td>
+                            {% endfor %}
+
+                            <!-- Create our edit/delete buttons -->
+						    <td><a href="edit_cafe/{{item.cafe_id}}" class="btn btn-default">Edit</a></td>
+						    <td><a href="delete_cafe/{{item.cafe_id}}" class="btn btn-default">Delete</a></td>
+
+					    </tr>
+                        {% endfor %}
+                {% endif %}
+        </table>
+	<p>&nbsp;</p>
+	</div>	<!-- browse -->
+
+	<div id="insert">
+		<!-- form to INSERT new data into space_cowboys-->
+		<form id="insertCafe" action="/cafes" method="post">
+			<legend><strong>Add Cafe</strong></legend>
+			<fieldset>
+                <!-- placeholder shows ghost text, required forces an input, pattern forces input adherence -->
+				<label for="cafe_name">cafe name:</label>
+				<input type="text" class="form-control" id="cafe_name" name="cafe_name" placeholder="" required>
+
+				<label for="cafe_country">cafe country:</label>
+				<input type="text" class="form-control" id="cafe_country" name="cafe_country" pattern="[a-zA-Z0-9\s]{1,}" placeholder="USA" required>
+
+				<label for="cafe_phone_number">cafe phone number:</label>
+				<input type="tel" class="form-control" id="cafe_phone_number" name="cafe_phone_number" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="XXX-XXX-XXXX" required>
+
+            </fieldset>
+
+            <!-- Create 'Add Cafe' and 'Cancel' buttons -->
+			<input type="submit" value="Add Cafe" name="Add_Cafe" class="btn btn-primary" style="margin:.5rem;">
+			<input class="btn" type="button" value="Cancel" onClick="browseCafe()">
+        </form>
+	</div><!--insert-->
+
+
+	<div id="edit">
+		<!-- form to edit data in space_cowboys-->
+		<form id="editCafe" action="/edit_cafe/{{data[0].cafe_id}}" method="post">
+			<legend><strong>Edit Cafe</strong></legend>
+			<fieldset>
+				<input type="hidden" value="{{data[0].cafe_id}}" class="form-control" id="cafe_id" name="cafe_id" required>
+				<label for="cafe_id">cafe name:</label>
+
+				<input type="text" class="form-control" id="cafe_name" name="cafe_name" placeholder="{{data[0].cafe_name}}" required>
+				<label for="cafe_name">cafe name:</label>
+
+				<input type="text" class="form-control" id="cafe_country" name="cafe_country" pattern="[a-zA-Z0-9\s]{1,}" placeholder="{{data[0].cafe_country}}" required>
+				<label for="cafe_country">cafe_country:</label>
+
+				<input type="tel" class="form-control" id="cafe_phone_number" name="cafe_phone_number"  pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" required>
+					<label for="cafe_phone_number">cafe_phone_number:</label>
+
+
+        </form>
+	</div><!--edit-->
+</body>
+</html>

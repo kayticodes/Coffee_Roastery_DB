@@ -1,0 +1,178 @@
+<!-- Citation for app structure -->
+<!-- Date 11/9/22 -->
+<!-- Adapted Sample Flask application for a BSG database, -->
+<!-- Source URL https://github.com/osu-cs340-ecampus/flask-starter-app -->
+
+<html>
+
+<head>
+	<title>Invoices</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+	<script language="JavaScript">
+	function showform(dowhat) {
+		/*
+		 * four DIVS: browse, insert, update, delete
+		 * this function sets one visible the others not
+		 */
+		if(dowhat == 'insert') {
+			document.getElementById('browse').style.display = 'none';
+			document.getElementById('insert').style.display = 'block';
+			document.getElementById('edit').style.display = 'none';
+			document.getElementById('delete').style.display = 'none';
+		} else if(dowhat == 'update') {
+			document.getElementById('browse').style.display = 'none';
+			document.getElementById('insert').style.display = 'none';
+			document.getElementById('edit').style.display = 'block';
+			document.getElementById('delete').style.display = 'none';
+		} else if(dowhat == 'delete') {
+			document.getElementById('browse').style.display = 'none';
+			document.getElementById('insert').style.display = 'none';
+			document.getElementById('edit').style.display = 'none';
+			document.getElementById('delete').style.display = 'block';
+		} else if(dowhat == 'all') {
+			document.getElementById('browse').style.display = 'block';
+			document.getElementById('insert').style.display = 'block';
+			document.getElementById('edit').style.display = 'block';
+			document.getElementById('delete').style.display = 'block';
+		} else { //by default display browse
+			document.getElementById('browse').style.display = 'block';
+			document.getElementById('insert').style.display = 'none';
+			document.getElementById('edit').style.display = 'none';
+			document.getElementById('delete').style.display = 'none';
+		}
+	}
+
+	function newInvoice() {
+		showform('insert');
+	}
+
+	function updateInvoice(invoice_id) {
+		showform('update');
+	}
+
+	function deleteInvoice(invoice_id) {
+		showform('delete');
+	}
+
+	function browseInvoice() {
+		showform('browse');
+	}
+
+	function showAll() {
+		showform('all');
+	}
+	</script>
+</head>
+
+<body onload="browseInvoice()">
+	<h1>Invoices</h1> [ <a href="/">Home</a> | <a href="cafes">Cafes</a> | <a href="coffees">Coffees</a>  | <a href="roasteries">Roasteries</a>  | <a href="invoices">Invoices</a> | <a href ="CoffeesHasInvoices">Coffees/Invoices</a> ]
+	<div id="browse">
+		<p><a href="#" onClick="newInvoice()">Add New</a> </p>
+		<table border="1" cellpadding="5">
+            <!-- Access data tuple passed from app.py -->
+            {% if data %}
+			    <thead>
+				    <tr>
+					    <!-- Iterate through each key in the first entry to get the column name -->
+                        {% for key in data[0].keys() %}
+
+                        <!-- Create a <th> tag with the key inside of it, this will be our header row -->
+					    <th scope="col" data-field="{{ key }}" data-filter-control="input">{{ key }}</th>
+
+                        <!-- End of this for loop -->
+                        {% endfor %}
+                    </tr>
+
+				<tbody>
+					<!-- Now, iterate through every item in data -->{% for item in data %}
+					    <tr>
+						    <!-- Then iterate through every key in the current item dictionary -->
+                            {% for key in item.keys() %}
+
+						    <!-- Create a <td> element with the value of that key in it -->
+						    <td> {{item[key]}} </td>
+                            {% endfor %}
+
+                            <!-- Create our edit/delete buttons -->
+						    <td><a href="edit_invoice/{{item.invoice_id}}" class="btn btn-default">Edit</a></td>
+						    <td><a href="delete_invoice/{{item.invoice_id}}" class="btn btn-default">Delete</a></td>
+
+					    </tr>
+                        {% endfor %}
+                {% endif %}
+        </table>
+	<p>&nbsp;</p>
+	</div>	<!-- browse -->
+
+	<div id="insert">
+		<!-- form to INSERT new data into space_cowboys-->
+		<form id="insertInvoice" action="/invoices" method="post">
+			<legend><strong>Add Invoice</strong></legend>
+			<fieldset>
+                <!-- placeholder shows ghost text, required forces an input, pattern forces input adherence -->
+
+				<select class="form-control" id="cafe_id" name="cafe_id" pattern="[0-4]{1}" placeholder="" required>
+                        <!-- Access our roastery tuple passed from app.py-->
+
+                        {% for cafe in cafes %}
+                                <!-- If the value iterated homeworld matches the value of the homeworld of person currently Editing, pre-select that option -->
+                                {% if cafe['cafe_id'] == data[0].cafe %}
+                                    <option value="{{cafe['cafe_id']}}" selected> {{cafe['cafe_name']}}</option>
+                                {% else %}
+                                    <option value="{{cafe['cafe_id']}}"> {{cafe['cafe_name']}}</option>
+                                {% endif %}
+
+
+                        <!-- End of this for loop -->
+                        {% endfor %}
+                    </select>
+
+				<label for="order_date">order date:</label>
+				<input type="date" class="form-control" id="order_date" name="order_date" placeholder="" required>
+
+				<label for="invoice_total">invoice total:</label>
+				<input type="number" class="form-control" id="invoice_total" name="invoice_total" min="0.01" step="0.01" max="2500" value="25.67" required>
+
+            </fieldset>
+
+            <!-- Create 'Add Invoice' and 'Cancel' buttons -->
+			<input type="submit" value="Add Invoice" name="Add_Invoice" class="btn btn-primary" style="margin:.5rem;">
+			<input class="btn" type="button" value="Cancel" onClick="browseInvoice()">
+        </form>
+	</div><!--insert-->
+
+	<div id="edit">
+		<!-- form to edit data in space_cowboys-->
+		<form id="editInvoice" action="/edit_invoice/{{data[0].invoice_id}}" method="post">
+			<legend><strong>Edit Invoice</strong></legend>
+			<fieldset>
+				<label for="invoice_id">invoice id:</label>
+				<input type="hidden" value="{{data[0].invoice_id}}" class="form-control" id="invoice_id" name="invoice_id" required>
+
+				<select class="form-control" id="cafe_id" name="cafe_id" pattern="[0-4]{1}" placeholder="" required>
+                        <!-- Access our roastery tuple passed from app.py-->
+
+                        {% for cafe in cafes %}
+                                <!-- If the value iterated homeworld matches the value of the homeworld of person currently Editing, pre-select that option -->
+                                {% if cafe['cafe_id'] == data[0].cafe %}
+                                    <option value="{{cafe['cafe_id']}}" selected> {{cafe['cafe_name']}}</option>
+                                {% else %}
+                                    <option value="{{cafe['cafe_id']}}"> {{cafe['cafe_name']}}</option>
+                                {% endif %}
+
+
+                        <!-- End of this for loop -->
+                        {% endfor %}
+                    </select>
+
+				<label for="order_date">order date:</label>
+				<input type="date" class="form-control" id="order_date" name="order_date" placeholder="{{data[0].order_date}}" required>
+
+				<label for="invoice_total">invoice total:</label>
+				<input type="number" class="form-control" id="invoice_total" name="invoice_total" min="0.01" step="0.01" max="2500" value="25.67" required>
+
+
+        </form>
+	</div><!--edit-->
+</body>
+</html>

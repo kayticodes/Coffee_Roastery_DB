@@ -1,0 +1,75 @@
+<!-- Citation for app structure -->
+<!-- Date 11/9/22 -->
+<!-- Adapted Sample Flask application for a BSG database, -->
+<!-- Source URL https://github.com/osu-cs340-ecampus/flask-starter-app -->
+
+<html>
+
+<head>
+	<title>Edit Roastery</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div>
+        <table border="1" cellpadding="5">
+            <caption> Editing Roastery: </caption>
+            <!-- Access data tuple passed from app.py -->
+            {% if data %}
+                <thead>
+                    <tr>
+                        <!-- Iterate through each key in the first entry to get the column name -->
+                        {% for key in data[0].keys() %}
+
+                        <!-- Create a <th> tag with the key inside of it, this will be our header row -->
+                        <th scope="col" data-field="{{ key }}" data-filter-control="input">{{ key }}</th>
+
+                        <!-- End of this for loop -->
+                        {% endfor %}
+                    </tr>
+
+                <tbody>
+                    <!-- Now, iterate through every item in data -->
+                    {% for item in data %}
+                    <tr>
+                        <!-- Then iterate through every key in the current item dictionary -->
+                        {% for key in item.keys() %}
+
+                        <!-- Create a <td> element with the value of that key in it -->
+                        <td>{{item[key]}}</td> {% endfor %}
+                    </tr>
+                    {% endfor %}
+            {% endif %}
+        </table>
+
+        <div id="edit">
+            <!-- form to edit data in Roasteries-->
+            <form id="editRoastery" action="/edit_roastery/{{data[0].roastery_id}}" method="post">
+                <legend><strong>Edit Roastery</strong></legend>
+                <fieldset>
+                    <!-- We can preset form inputs to match attributes currently stored for 'id' of roastery to be updated via value= and accessing our passed data tuple -->
+                    <!-- Create hidden form input to store the passed 'id' of the roastery we are editing so we can access it easily in our 'POST' method in our app.py -->
+                    <input type="hidden" value="{{data[0].roastery_id}}" class="form-control" id="roastery_id" name="roastery_id">
+
+                    <label for="roastery_name">roastery name:</label>
+                    <input type="text" value="{{data[0].roastery_name}}" class="form-control" id="roastery_name" name="roastery_name"  >
+
+                    <label for="roastery_country">roastery country:</label>
+                    <input type="text" value="{{data[0].roastery_country}}" class="form-control" id="roastery_country" name="roastery_country"  >
+
+                    <label for="roastery_phone">phone number:</label>
+                    <input type="tel" value="{{data[0].roastery_phone}}" class="form-control" id="roastery_phone" name="roastery_phone"  >
+
+                    <label for="roastery_contact_person">roastery contact person:</label>
+                    <input type="text" value="{{data[0].roastery_contact_person}}" class="form-control" id="roastery_contact_person" name="roastery_contact_person"  >
+
+                    <label for="contact_person_extension">contact person extension:</label>
+                    <input type="number" value="{{data[0].contact_person_extension}}" class="form-control" id="contact_person_extension" name="contact_person_extension"  >
+
+
+                </fieldset>
+                <input type="submit" value="Edit Roastery" name="Edit_Roastery" class="btn btn-primary" style="margin:.5rem;">
+                <a href='/roasteries'><input class="btn" type="button" value="cancel"></a>
+            </form>
+
+</html>

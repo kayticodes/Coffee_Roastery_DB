@@ -1,0 +1,100 @@
+<!-- Citation for app structure -->
+<!-- Date 11/9/22 -->
+<!-- Adapted Sample Flask application for a BSG database, -->
+<!-- Source URL https://github.com/osu-cs340-ecampus/flask-starter-app -->
+
+
+<html>
+
+<head>
+	<title>Edit Coffee</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div>
+        <table border="1" cellpadding="5">
+            <caption> Editing Coffee: </caption>
+            <!-- Access data tuple passed from app.py -->
+            {% if data %}
+                <thead>
+                    <tr>
+                        <!-- Iterate through each key in the first entry to get the column name -->
+                        {% for key in data[0].keys() %}
+
+                        <!-- Create a <th> tag with the key inside of it, this will be our header row -->
+                        <th scope="col" data-field="{{ key }}" data-filter-control="input">{{ key }}</th>
+
+                        <!-- End of this for loop -->
+                        {% endfor %}
+                    </tr>
+
+                <tbody>
+                    <!-- Now, iterate through every item in data -->
+                    {% for item in data %}
+                    <tr>
+                        <!-- Then iterate through every key in the current item dictionary -->
+                        {% for key in item.keys() %}
+
+                        <!-- Create a <td> element with the value of that key in it -->
+                        <td>{{item[key]}}</td> {% endfor %}
+                    </tr>
+                    {% endfor %}
+            {% endif %}
+        </table>
+
+        <div id="edit">
+            <!-- form to edit data in Coffees-->
+            <form id="editCoffee" action="/edit_coffee/{{data[0].coffee_id}}" method="post">
+                <legend><strong>Edit Coffee</strong></legend>
+                <fieldset>
+                    <!-- We can preset form inputs to match attributes currently stored for 'id' of coffee to be updated via value= and accessing our passed data tuple -->
+                    <!-- Create hidden form input to store the passed 'id' of the coffee we are editing so we can access it easily in our 'POST' method in our app.py -->
+                    <input type="hidden" value="{{data[0].coffee_id}}" class="form-control" id="coffee_id" name="coffee_id">
+
+                    <label for="coffee_name">coffee name:</label>
+                    <input type="text" value="{{data[0].coffee_name}}" class="form-control" id="coffee_name" name="coffee_name"  >
+
+
+                    <label for="bean_type">bean type:</label>
+                    <select class="form-control" value="{{data[0].bean_type}}" id="bean_type" name="bean_type" pattern="{1}" style="font-family:verdana" placeholder="{{data[0].bean_type}}" required>
+                        <option value="light">Light</option>
+                        <option value="medium">Medium</option>
+                        <option value="dark">Dark</option>
+                        <option value="medium-light">Medium-Light</option>
+                        <option value="medium-dark">Medium-Dark</option>
+                        <option value="{{data[0].bean_type}}" selected>{{data[0].bean_type}}</option>
+                    </select>
+
+                    <label for="roastery_id">roastery name:</label>
+                    <select class="form-control" id="roastery_id" name="roastery_id" pattern="[0-4]{1}" placeholder="" required>
+                        <!-- Access our roastery tuple passed from app.py-->
+
+                        {% for roastery in roasteries %}
+                                <!-- If the value iterated homeworld matches the value of the homeworld of person currently Editing, pre-select that option -->
+                                {% if roastery['roastery_id'] == data[0].roastery %}
+                                    <option value="{{roastery['roastery_id']}}" selected> {{roastery['roastery_name']}}</option>
+                                {% else %}
+                                    <option value="{{roastery['roastery_id']}}"> {{roastery['roastery_name']}}</option>
+                                {% endif %}
+
+
+                        <!-- End of this for loop -->
+                        {% endfor %}
+                        <option value="">Unknown</option>
+                    </select>
+
+                    <label for="retail_price">retail price:</label>
+                    <input type="text" value="{{data[0].retail_price}}" class="form-control" id="retail_price" name="retail_price"  >
+
+                    <label for="quantity_in_stock">quantity in stock:</label>
+                    <input type="text" value="{{data[0].quantity_in_stock}}" class="form-control" id="quantity_in_stock" name="quantity_in_stock"  >
+
+
+
+                </fieldset>
+                <input type="submit" value="Edit Coffee" name="Edit_Coffee" class="btn btn-primary" style="margin:.5rem;">
+                <a href='/coffees'><input class="btn" type="button" value="cancel"></a>
+            </form>
+
+</html>

@@ -1,0 +1,83 @@
+<!-- Citation for app structure -->
+<!-- Date 11/9/22 -->
+<!-- Adapted Sample Flask application for a BSG database, -->
+<!-- Source URL https://github.com/osu-cs340-ecampus/flask-starter-app -->
+
+<html>
+
+<head>
+	<title>Edit Invoice</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div>
+        <table border="1" cellpadding="5">
+            <caption> Editing Invoice: </caption>
+            <!-- Access data tuple passed from app.py -->
+            {% if data %}
+                <thead>
+                    <tr>
+                        <!-- Iterate through each key in the first entry to get the column name -->
+                        {% for key in data[0].keys() %}
+
+                        <!-- Create a <th> tag with the key inside of it, this will be our header row -->
+                        <th scope="col" data-field="{{ key }}" data-filter-control="input">{{ key }}</th>
+
+                        <!-- End of this for loop -->
+                        {% endfor %}
+                    </tr>
+
+                <tbody>
+                    <!-- Now, iterate through every item in data -->
+                    {% for item in data %}
+                    <tr>
+                        <!-- Then iterate through every key in the current item dictionary -->
+                        {% for key in item.keys() %}
+
+                        <!-- Create a <td> element with the value of that key in it -->
+                        <td>{{item[key]}}</td> {% endfor %}
+                    </tr>
+                    {% endfor %}
+            {% endif %}
+        </table>
+
+        <div id="edit">
+            <!-- form to edit data in Invoices-->
+            <form id="editInvoice" action="/edit_invoice/{{data[0].invoice_id}}" method="post">
+                <legend><strong>Edit Invoice</strong></legend>
+                <fieldset>
+                    <!-- We can preset form inputs to match attributes currently stored for 'id' of invoice to be updated via value= and accessing our passed data tuple -->
+                    <!-- Create hidden form input to store the passed 'id' of the invoice we are editing so we can access it easily in our 'POST' method in our app.py -->
+
+				    <label for="invoice_id">invoice id:</label>
+				    <input type="hidden" value="{{data[0].invoice_id}}" class="form-control" id="invoice_id" name="invoice_id" required>
+
+                    <select class="form-control" id="cafe_id" name="cafe_id" pattern="[0-4]{1}" placeholder="" required>
+                        <!-- Access our roastery tuple passed from app.py-->
+
+                        {% for cafe in cafes %}
+                                <!-- If the value iterated homeworld matches the value of the homeworld of person currently Editing, pre-select that option -->
+                                {% if cafe['cafe_id'] == data[0].cafe %}
+                                    <option value="{{cafe['cafe_id']}}" selected> {{cafe['cafe_name']}}</option>
+                                {% else %}
+                                    <option value="{{cafe['cafe_id']}}"> {{cafe['cafe_name']}}</option>
+                                {% endif %}
+
+
+                        <!-- End of this for loop -->
+                        {% endfor %}
+                    </select>
+                    <label for="order_date">order date:</label>
+                    <input type="text" value="{{data[0].order_date}}" class="form-control" id="order_date" name="order_date"  >
+
+                    <label for="invoice_total">invoice total:</label>
+                    <input type="text" value="{{data[0].invoice_total}}" class="form-control" id="invoice_total" name="invoice_total"  >
+
+
+                </fieldset>
+                <input type="submit" value="Edit Invoice" name="Edit_Invoice" class="btn btn-primary" style="margin:.5rem;">
+                <a href='/invoices'><input class="btn" type="button" value="cancel"></a>
+            </form>
+
+</html>

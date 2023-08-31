@@ -1,0 +1,187 @@
+<!-- Citation for app structure -->
+<!-- Date 11/9/22 -->
+<!-- Adapted Sample Flask application for a BSG database, -->
+<!-- Source URL https://github.com/osu-cs340-ecampus/flask-starter-app -->
+
+<html>
+
+<head>
+	<title>Coffees</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+	<script language="JavaScript">
+	function showform(dowhat) {
+		/*
+		 * four DIVS: browse, insert, update, delete
+		 * this function sets one visible the others not
+		 */
+		if(dowhat == 'insert') {
+			document.getElementById('browse').style.display = 'none';
+			document.getElementById('insert').style.display = 'block';
+			document.getElementById('edit').style.display = 'none';
+			document.getElementById('delete').style.display = 'none';
+		} else if(dowhat == 'update') {
+			document.getElementById('browse').style.display = 'none';
+			document.getElementById('insert').style.display = 'none';
+			document.getElementById('edit').style.display = 'block';
+			document.getElementById('delete').style.display = 'none';
+		} else if(dowhat == 'delete') {
+			document.getElementById('browse').style.display = 'none';
+			document.getElementById('insert').style.display = 'none';
+			document.getElementById('edit').style.display = 'none';
+			document.getElementById('delete').style.display = 'block';
+		} else if(dowhat == 'all') {
+			document.getElementById('browse').style.display = 'block';
+			document.getElementById('insert').style.display = 'block';
+			document.getElementById('edit').style.display = 'block';
+			document.getElementById('delete').style.display = 'block';
+		} else { //by default display browse
+			document.getElementById('browse').style.display = 'block';
+			document.getElementById('insert').style.display = 'none';
+			document.getElementById('edit').style.display = 'none';
+			document.getElementById('delete').style.display = 'none';
+		}
+	}
+
+	function newCoffee() {
+		showform('insert');
+	}
+
+	function updateCoffee(coffee_id) {
+		showform('update');
+	}
+
+	function deleteCoffee(coffee_id) {
+		showform('delete');
+	}
+
+	function browseCoffee() {
+		showform('browse');
+	}
+
+	function showAll() {
+		showform('all');
+	}
+	</script>
+</head>
+
+<body onload="browseCoffee()">
+	<h1>Coffees</h1> [ <a href="/">Home</a> | <a href="cafes">Cafes</a> | <a href="coffees">Coffees</a>  | <a href="roasteries">Roasteries</a>  | <a href="invoices">Invoices</a> | <a href ="CoffeesHasInvoices">Coffees/Invoices</a> ]
+	<div id="browse">
+		<p><a href="#" onClick="newCoffee()">Add New</a> </p>
+		<table border="1" cellpadding="5">
+            <!-- Access data tuple passed from app.py -->
+            {% if data %}
+			    <thead>
+				    <tr>
+					    <!-- Iterate through each key in the first entry to get the column name -->
+                        {% for key in data[0].keys() %}
+
+                        <!-- Create a <th> tag with the key inside of it, this will be our header row -->
+					    <th scope="col" data-field="{{ key }}" data-filter-control="input">{{ key }}</th>
+
+                        <!-- End of this for loop -->
+                        {% endfor %}
+                    </tr>
+
+				<tbody>
+					<!-- Now, iterate through every item in data -->{% for item in data %}
+					    <tr>
+						    <!-- Then iterate through every key in the current item dictionary -->
+                            {% for key in item.keys() %}
+
+						    <!-- Create a <td> element with the value of that key in it -->
+						    <td> {{item[key]}} </td>
+                            {% endfor %}
+
+                            <!-- Create our edit/delete buttons -->
+						    <td><a href="edit_coffee/{{item.coffee_id}}" class="btn btn-default">Edit</a></td>
+						    <td><a href="delete_coffee/{{item.coffee_id}}" class="btn btn-default">Delete</a></td>
+
+					    </tr>
+                        {% endfor %}
+                {% endif %}
+        </table>
+	<p>&nbsp;</p>
+	</div>	<!-- browse -->
+
+	<div id="insert">
+		<!-- form to INSERT new data into space_cowboys-->
+		<form id="insertCoffee" action="/coffees" method="post">
+			<legend><strong>Add Coffee</strong></legend>
+			<fieldset>
+                <!-- placeholder shows ghost text, required forces an input, pattern forces input adherence -->
+				<label for="coffee_name">coffee name:</label>
+				<input type="text" class="form-control" id="coffee_name" name="coffee_name" placeholder="" required>
+
+				<label for="bean_type">bean type:</label>
+				<select class="form-control" id="bean_type" name="bean_type" pattern="{1}" style="font-family:verdana" placeholder="" required>
+					<option value="Light">Light</option>
+					<option value="Medium">Medium</option>
+					<option value="Dark">Dark</option>
+					<option value="Medium-Light">Medium-Light</option>
+					<option value="Medium-Dark">Medium-Dark</option>
+				</select>
+
+				<label for="roastery">roastery:</label>
+				<select class="form-control" id="roastery_id" name="roastery_id" pattern="{1}" style="font-family:verdana" placeholder="Choose a value" required>
+                    {% for x in roasteries %}
+                    	<option value={{x.roastery_id}}>{{x.roastery_name}}</option>
+                    {% endfor %}
+					<option value="">Unknown</option>
+				</select>
+
+                <label for="retail_price">retail price $:</label>
+				<input type="number" class="form-control" id="retail_price" name="retail_price" min="0.00" step="0.01" max="2500" value="25.67" placeholder="">
+
+				<label for="quantity_in_stock">quantity in stock:</label>
+				<input type="number" class="form-control" id="quantity_in_stock" name="quantity_in_stock">
+
+            </fieldset>
+
+            <!-- Create 'Add Coffee' and 'Cancel' buttons -->
+			<input type="submit" value="Add Coffee" name="Add_Coffee" class="btn btn-primary" style="margin:.5rem;">
+			<input class="btn" type="button" value="Cancel" onClick="browseCoffee()">
+        </form>
+	</div><!--insert-->
+
+	<div id="edit">
+		<!-- form to edit data in space_cowboys-->
+		<form id="editCoffee" action="/edit_coffee/{{data[0].coffee_id}}" method="post">
+			<legend><strong>Edit Coffee</strong></legend>
+			<fieldset>
+				<input type="hidden" value="{{data[0].coffee_id}}" class="form-control" id="coffee_id" name="coffee_id" required>
+				<label for="coffee_id">coffee id:</label>
+
+				<label for="coffee_name">coffee name:</label>
+				<input type="text" class="form-control" id="coffee_name" name="coffee_name" placeholder="" required>
+
+				<label for="bean_type">bean type:</label>
+				<select class="form-control" value="{{data[0].bean_type}}" id="bean_type" name="bean_type" pattern="{1}" style="font-family:verdana" placeholder="{{data[0].bean_type}}" required>
+					<option value="Light">Light</option>
+					<option value="Medium">Medium</option>
+					<option value="Dark">Dark</option>
+					<option value="Medium-Light">Medium-Light</option>
+					<option value="Medium-Dark">Medium-Dark</option>
+					<option value="{{data[0].bean_type}}" selected></option>
+				</select>
+
+				<label for="roastery">roastery:</label>
+				<select class="form-control" id="roastery_id" name="roastery_id" pattern="{1}" style="font-family:verdana" placeholder="" required>
+					<option value="{{data[0].roastery}}" selected></option>
+					<option value="">Unknown</option>
+                    {% for x in roasteries %}
+                    	<option value={{x.roastery_id}}>{{x.roastery_name}}</option>
+                    {% endfor %}
+				</select>
+
+                <label for="retail_price">retail price $:</label>
+				<input type="number" class="form-control" id="bean_type" name="bean_type" min="0.01" step="0.01" max="2500" value="25.67" placeholder="" required>
+
+				<label for="quantity_in_stock">quantity in stock:</label>
+				<input type="number" class="form-control" id="quantity_in_stock" name="quantity_in_stock" required>
+
+
+        </form>
+	</div><!--edit-->
+</body>
+</html>
